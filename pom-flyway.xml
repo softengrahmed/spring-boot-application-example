@@ -1,0 +1,41 @@
+<!-- Add this to your existing pom.xml under <plugins> section -->
+<!-- Flyway Database Migration Plugin Configuration -->
+
+<plugin>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-maven-plugin</artifactId>
+    <version>8.5.13</version>
+    <configuration>
+        <url>${flyway.url}</url>
+        <user>${flyway.user}</user>
+        <password>${flyway.password}</password>
+        <locations>
+            <location>classpath:db/migration</location>
+        </locations>
+        <schemas>
+            <schema>${flyway.schema}</schema>
+        </schemas>
+        <baselineOnMigrate>true</baselineOnMigrate>
+        <validateOnMigrate>true</validateOnMigrate>
+        <cleanDisabled>true</cleanDisabled>
+    </configuration>
+    <dependencies>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.1.214</version>
+        </dependency>
+    </dependencies>
+</plugin>
+
+<!-- Also add Flyway Core dependency under <dependencies> section -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-core</artifactId>
+    <version>8.5.13</version>
+</dependency>
