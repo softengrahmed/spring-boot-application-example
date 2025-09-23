@@ -1,0 +1,202 @@
+# Spring Boot Application Configuration for Monitoring
+# Production-ready configuration with observability
+
+spring:
+  application:
+    name: spring-boot-app
+    
+  # Actuator Configuration
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus,env,configprops
+        base-path: /actuator
+        cors:
+          allowed-origins: "*"
+          allowed-methods: "GET,POST"
+    
+    endpoint:
+      health:
+        show-details: when-authorized
+        show-components: always
+        
+    health:
+      diskspace:
+        enabled: true
+        threshold: 100MB
+      db:
+        enabled: true
+        
+    metrics:
+      export:
+        cloudwatch:
+          enabled: true
+          namespace: SpringBoot/Application
+          step: 1m
+          batch-size: 20
+          
+      distribution:
+        percentiles-histogram:
+          http.server.requests: true
+          
+    info:
+      env:
+        enabled: true
+      build:
+        enabled: true
+      git:
+        enabled: true
+        mode: full
+        
+  # Database Configuration
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:testdb}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    
+    # Connection Pool Monitoring
+    hikari:
+      pool-name: SpringBootCP
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+      
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.H2Dialect}
+        format_sql: true
+        generate_statistics: true
+        
+  # Logging Configuration
+  logging:
+    level:
+      com.myapp: ${LOG_LEVEL:INFO}
+      org.springframework.security: WARN
+      org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+      org.hibernate.type.descriptor.sql.BasicBinder: WARN
+      
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+      file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+      
+    file:
+      name: /var/log/spring-boot-app.log
+      max-size: 100MB
+      max-history: 30
+      
+# Custom Application Properties
+app:
+  name: ${spring.application.name}
+  version: @project.version@
+  build-time: @maven.build.timestamp@
+  
+  # Feature Flags
+  features:
+    metrics-enabled: true
+    health-checks-enabled: true
+    security-enabled: true
+    
+  # Performance Configuration
+  performance:
+    async:
+      core-pool-size: 2
+      max-pool-size: 5
+      queue-capacity: 100
+      
+    cache:
+      enabled: true
+      ttl: 300  # seconds
+      
+  # Security Configuration
+  security:
+    cors:
+      allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+      
+  logging:
+    level:
+      com.myapp: DEBUG
+      org.hibernate.SQL: DEBUG
+      
+  datasource:
+    url: jdbc:h2:mem:devdb
+    
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      
+---
+# Staging Profile
+spring:
+  config:
+    activate:
+      on-profile: staging
+      
+  logging:
+    level:
+      com.myapp: INFO
+      
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+  logging:
+    level:
+      com.myapp: WARN
+      root: INFO
+      
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        generate_statistics: false
+        
+  management:
+    endpoint:
+      health:
+        show-details: never

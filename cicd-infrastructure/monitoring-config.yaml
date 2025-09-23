@@ -1,0 +1,338 @@
+# Monitoring and Observability Configuration
+# Spring Boot Application on AWS ECS
+
+monitoring:
+  # Global Configuration
+  enabled: true
+  environment: "{{ env }}"
+  
+  # CloudWatch Configuration
+  cloudwatch:
+    # Log Groups
+    log_groups:
+      - name: "/aws/ecs/spring-boot-app"
+        retention_days: 14
+        
+      - name: "/aws/ecs/spring-boot-app/application"
+        retention_days: 14
+        
+      - name: "/aws/rds/spring-boot-db"
+        retention_days: 7
+        
+    # Metrics
+    custom_metrics:
+      - name: "ApplicationStartupTime"
+        namespace: "SpringBoot/Application"
+        unit: "Seconds"
+        
+      - name: "DatabaseConnectionPool"
+        namespace: "SpringBoot/Database"
+        unit: "Count"
+        
+      - name: "APIResponseTime"
+        namespace: "SpringBoot/API"
+        unit: "Milliseconds"
+        
+    # Alarms
+    alarms:
+      # Application Health
+      - name: "spring-boot-app-health-check-failed"
+        description: "Application health check failures"
+        metric_name: "HealthyHostCount"
+        namespace: "AWS/ApplicationELB"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 2
+        threshold: 1
+        comparison_operator: "LessThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:us-east-1:ACCOUNT:spring-boot-alerts"
+          
+      # High CPU
+      - name: "spring-boot-app-high-cpu"
+        description: "High CPU utilization"
+        metric_name: "CPUUtilization"
+        namespace: "AWS/ECS"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 2
+        threshold: 80
+        comparison_operator: "GreaterThanThreshold"
+        
+      # High Memory
+      - name: "spring-boot-app-high-memory"
+        description: "High memory utilization"
+        metric_name: "MemoryUtilization"
+        namespace: "AWS/ECS"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 2
+        threshold: 85
+        comparison_operator: "GreaterThanThreshold"
+        
+      # Database Connections
+      - name: "spring-boot-db-high-connections"
+        description: "High database connections"
+        metric_name: "DatabaseConnections"
+        namespace: "AWS/RDS"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 1
+        threshold: 20
+        comparison_operator: "GreaterThanThreshold"
+        
+  # Application Metrics
+  application_metrics:
+    # Spring Boot Actuator
+    actuator:
+      enabled: true
+      endpoints:
+        - health
+        - metrics
+        - prometheus
+        - info
+        
+    # Custom Metrics
+    custom:
+      # Business Metrics
+      - name: "user_registrations"
+        type: "counter"
+        description: "Number of user registrations"
+        
+      - name: "api_requests_total"
+        type: "counter"
+        description: "Total API requests"
+        labels: ["method", "endpoint", "status"]
+        
+      - name: "database_query_duration"
+        type: "histogram"
+        description: "Database query execution time"
+        buckets: [0.1, 0.5, 1.0, 2.0, 5.0]
+        
+  # Infrastructure Monitoring
+  infrastructure:
+    # ECS Monitoring
+    ecs:
+      enabled: true
+      metrics:
+        - "CPUUtilization"
+        - "MemoryUtilization"
+        - "NetworkRxBytes"
+        - "NetworkTxBytes"
+        
+    # RDS Monitoring
+    rds:
+      enabled: true
+      enhanced_monitoring: true
+      metrics:
+        - "CPUUtilization"
+        - "DatabaseConnections"
+        - "FreeableMemory"
+        - "ReadLatency"
+        - "WriteLatency"
+        
+    # Load Balancer Monitoring
+    alb:
+      enabled: true
+      metrics:
+        - "RequestCount"
+        - "TargetResponseTime"
+        - "HTTPCode_Target_2XX_Count"
+        - "HTTPCode_Target_4XX_Count"
+        - "HTTPCode_Target_5XX_Count"
+        
+  # Log Management
+  logging:
+    # Structured Logging
+    structured:
+      enabled: true
+      format: "json"
+      
+    # Log Levels
+    levels:
+      root: "INFO"
+      com.myapp: "DEBUG"
+      org.springframework: "WARN"
+      
+    # Log Aggregation
+    aggregation:
+      enabled: true
+      retention_policy:
+        debug: 3
+        info: 7
+        warn: 14
+        error: 30
+        
+  # Distributed Tracing
+  tracing:
+    enabled: false  # Can be enabled later
+    provider: "aws-xray"
+    
+    configuration:
+      sampling_rate: 0.1
+      trace_id_injection: true
+      
+  # Health Checks
+  health_checks:
+    # Application Health
+    application:
+      endpoint: "/actuator/health"
+      interval: 30
+      timeout: 10
+      healthy_threshold: 2
+      unhealthy_threshold: 3
+      
+    # Database Health
+    database:
+      enabled: true
+      query: "SELECT 1"
+      timeout: 5
+      
+    # External Dependencies
+    dependencies:
+      - name: "external-api"
+        endpoint: "https://api.example.com/health"
+        timeout: 5
+        
+  # Dashboards
+  dashboards:
+    # CloudWatch Dashboard
+    cloudwatch:
+      enabled: true
+      name: "spring-boot-app-dashboard"
+      
+      widgets:
+        - type: "metric"
+          title: "Application Health"
+          metrics:
+            - ["AWS/ApplicationELB", "HealthyHostCount"]
+            - ["AWS/ApplicationELB", "UnHealthyHostCount"]
+            
+        - type: "metric"
+          title: "Response Times"
+          metrics:
+            - ["AWS/ApplicationELB", "TargetResponseTime"]
+            
+        - type: "metric"
+          title: "Request Count"
+          metrics:
+            - ["AWS/ApplicationELB", "RequestCount"]
+            
+        - type: "metric"
+          title: "Error Rates"
+          metrics:
+            - ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count"]
+            - ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count"]
+            
+  # Notifications
+  notifications:
+    # SNS Topics
+    sns_topics:
+      - name: "spring-boot-alerts"
+        display_name: "Spring Boot Application Alerts"
+        
+      - name: "spring-boot-critical"
+        display_name: "Spring Boot Critical Alerts"
+        
+    # Notification Rules
+    rules:
+      - name: "critical-errors"
+        severity: "critical"
+        topics: ["spring-boot-critical"]
+        
+      - name: "warnings"
+        severity: "warning"
+        topics: ["spring-boot-alerts"]
+        
+    # Endpoints
+    endpoints:
+      email:
+        - "devops@example.com"
+        - "team@example.com"
+        
+      slack:
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        channel: "#alerts"
+        
+  # Performance Monitoring
+  performance:
+    # APM (Application Performance Monitoring)
+    apm:
+      enabled: false  # Can be enabled later
+      provider: "aws-xray"
+      
+    # Profiling
+    profiling:
+      enabled: false
+      continuous: false
+      
+    # Load Testing Integration
+    load_testing:
+      enabled: false
+      
+  # Security Monitoring
+  security:
+    # CloudTrail Integration
+    cloudtrail:
+      enabled: true
+      log_group: "/aws/cloudtrail/spring-boot"
+      
+    # VPC Flow Logs
+    vpc_flow_logs:
+      enabled: true
+      traffic_type: "ALL"
+      
+    # GuardDuty Integration
+    guardduty:
+      enabled: true
+      
+# Environment-specific Configuration
+environments:
+  dev:
+    log_level: "DEBUG"
+    retention_days: 7
+    alarm_threshold_multiplier: 1.5
+    
+  staging:
+    log_level: "INFO"
+    retention_days: 14
+    alarm_threshold_multiplier: 1.2
+    
+  prod:
+    log_level: "WARN"
+    retention_days: 30
+    alarm_threshold_multiplier: 1.0
+    enhanced_monitoring: true
+    
+# Cost Optimization
+cost_optimization:
+  # Log Compression
+  log_compression: true
+  
+  # Metric Filtering
+  metric_filtering: true
+  
+  # Retention Policies
+  retention_policies:
+    metrics: 90  # days
+    logs: 14     # days
+    traces: 7    # days
+    
+# Integration Configuration
+integrations:
+  # Prometheus (optional)
+  prometheus:
+    enabled: false
+    endpoint: "/actuator/prometheus"
+    
+  # Grafana (optional)
+  grafana:
+    enabled: false
+    
+  # New Relic (optional)
+  newrelic:
+    enabled: false
+    
+  # DataDog (optional)
+  datadog:
+    enabled: false
