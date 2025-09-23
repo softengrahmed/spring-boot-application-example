@@ -1,0 +1,295 @@
+# Comprehensive Cleanup Strategy Configuration
+# Spring Boot CI/CD Pipeline
+
+cleanup_strategy:
+  # Global Configuration
+  enabled: true
+  cleanup_mode: "comprehensive"  # basic, comprehensive, aggressive
+  
+  # Execution Configuration
+  execution:
+    run_on_success: true
+    run_on_failure: true
+    run_on_cancellation: true
+    timeout_minutes: 30
+    
+  # AWS Resource Cleanup
+  aws_resources:
+    # ECR (Elastic Container Registry)
+    ecr:
+      enabled: true
+      repositories:
+        - name: "spring-boot-app"
+          retention_policy:
+            keep_latest: 10
+            keep_tagged: true
+            keep_untagged_days: 1
+            
+    # ECS (Elastic Container Service)
+    ecs:
+      enabled: true
+      cleanup_actions:
+        - stop_orphaned_tasks
+        - remove_stopped_tasks
+        - cleanup_old_task_definitions
+      retention:
+        task_definitions: 10
+        
+    # RDS (Relational Database Service)
+    rds:
+      enabled: true
+      cleanup_actions:
+        - remove_old_snapshots
+        - cleanup_parameter_groups
+      retention:
+        manual_snapshots_days: 30
+        automated_snapshots_days: 7
+        
+    # CloudWatch
+    cloudwatch:
+      enabled: true
+      cleanup_actions:
+        - remove_old_log_streams
+        - cleanup_metric_filters
+        - remove_empty_log_groups
+      retention:
+        log_groups_days: 14
+        
+    # S3 Storage
+    s3:
+      enabled: true
+      buckets:
+        - name: "artifacts-bucket"
+          lifecycle_rules:
+            - name: "delete_old_artifacts"
+              expiration_days: 30
+              
+        - name: "build-cache-bucket"
+          lifecycle_rules:
+            - name: "delete_cache"
+              expiration_days: 7
+              
+    # Load Balancer
+    alb:
+      enabled: true
+      cleanup_actions:
+        - remove_unused_target_groups
+        - cleanup_listener_rules
+        
+  # GitHub Actions Cleanup
+  github_actions:
+    # Artifacts
+    artifacts:
+      enabled: true
+      retention_days: 14
+      cleanup_patterns:
+        - "build-*"
+        - "test-*"
+        - "security-*"
+        
+    # Cache
+    cache:
+      enabled: true
+      max_cache_size: "2GB"
+      cleanup_patterns:
+        - "maven-*"
+        - "docker-*"
+        
+    # Workflow Runs
+    workflow_runs:
+      enabled: false  # GitHub handles this automatically
+      retention_days: 90
+      
+  # Docker Cleanup
+  docker:
+    enabled: true
+    cleanup_actions:
+      - remove_unused_images
+      - remove_dangling_images
+      - remove_unused_volumes
+      - remove_unused_networks
+      
+    retention:
+      image_age_days: 7
+      
+  # Maven Cleanup
+  maven:
+    enabled: true
+    cleanup_actions:
+      - clean_target_directories
+      - remove_old_repositories
+      
+    paths:
+      - "target/"
+      - ".m2/repository/com/myapp/"
+      
+  # Environment-specific Configuration
+  environments:
+    dev:
+      retention_days: 7
+      aggressive_cleanup: true
+      
+    staging:
+      retention_days: 14
+      aggressive_cleanup: false
+      
+    prod:
+      retention_days: 30
+      aggressive_cleanup: false
+      protect_resources: true
+      
+  # Safety Configuration
+  safety:
+    # Resource Protection
+    protected_resources:
+      - "prod-*"
+      - "*-production"
+      - "backup-*"
+      
+    # Confirmation Requirements
+    require_confirmation:
+      - production_resources
+      - manual_snapshots
+      
+    # Backup Before Cleanup
+    backup_before_cleanup:
+      enabled: true
+      resources:
+        - database_snapshots
+        - configuration_files
+        
+  # Monitoring and Reporting
+  monitoring:
+    # Cleanup Metrics
+    metrics:
+      enabled: true
+      track_resources_cleaned: true
+      track_space_freed: true
+      track_cost_savings: true
+      
+    # Notifications
+    notifications:
+      on_completion: true
+      on_errors: true
+      on_cost_savings: true
+      
+    # Reporting
+    reporting:
+      generate_summary: true
+      include_before_after: true
+      export_formats: ["JSON", "HTML"]
+      
+  # Advanced Configuration
+  advanced:
+    # Parallel Execution
+    parallel_cleanup: true
+    max_concurrent_jobs: 5
+    
+    # Error Handling
+    continue_on_error: true
+    max_retries: 3
+    
+    # Custom Scripts
+    custom_scripts:
+      pre_cleanup:
+        - script: "backup-critical-data.sh"
+          timeout: 300
+          
+      post_cleanup:
+        - script: "validate-cleanup.sh"
+          timeout: 120
+          
+# Cleanup Commands and Scripts
+cleanup_commands:
+  # AWS CLI Commands
+  aws:
+    ecr_cleanup: |
+      # Clean up old ECR images
+      aws ecr describe-images --repository-name spring-boot-app \
+        --query 'sort_by(imageDetails,& imageDigest)[:-10].[imageDigest]' \
+        --output text | while read digest; do
+          if [ "$digest" != "None" ]; then
+            aws ecr batch-delete-image --repository-name spring-boot-app \
+              --image-ids imageDigest=$digest
+          fi
+        done
+        
+    cloudwatch_cleanup: |
+      # Clean up old CloudWatch log groups
+      aws logs describe-log-groups \
+        --log-group-name-prefix "/aws/ecs/spring-boot" \
+        --query 'logGroups[?creationTime < `'$(date -d '14 days ago' +%s000)'`].logGroupName' \
+        --output text | while read log_group; do
+          if [ "$log_group" != "None" ]; then
+            aws logs delete-log-group --log-group-name $log_group
+          fi
+        done
+        
+  # Docker Commands
+  docker:
+    cleanup_images: |
+      # Remove unused Docker images
+      docker image prune -af --filter "until=24h"
+      
+    cleanup_volumes: |
+      # Remove unused Docker volumes
+      docker volume prune -f
+      
+  # Maven Commands
+  maven:
+    clean_target: |
+      # Clean Maven target directories
+      find . -name "target" -type d -exec rm -rf {} +
+      
+# Cost Optimization
+cost_optimization:
+  # Resource Scheduling
+  scheduling:
+    non_production_environments:
+      shutdown_schedule: "0 20 * * 1-5"  # 8 PM weekdays
+      startup_schedule: "0 8 * * 1-5"    # 8 AM weekdays
+      
+  # Storage Optimization
+  storage:
+    compress_logs: true
+    archive_old_data: true
+    use_intelligent_tiering: true
+    
+  # Compute Optimization
+  compute:
+    use_spot_instances: true
+    auto_scaling_aggressive: true
+    
+# Validation and Testing
+validation:
+  # Pre-cleanup Validation
+  pre_cleanup:
+    - check_resource_dependencies
+    - verify_backup_status
+    - confirm_environment_state
+    
+  # Post-cleanup Validation
+  post_cleanup:
+    - verify_application_health
+    - check_resource_availability
+    - validate_cost_impact
+    
+# Emergency Procedures
+emergency:
+  # Quick Cleanup (for urgent space/cost issues)
+  quick_cleanup:
+    enabled: true
+    actions:
+      - remove_all_build_artifacts
+      - cleanup_all_docker_images
+      - purge_old_logs
+      
+  # Recovery Procedures
+  recovery:
+    backup_locations:
+      - "s3://backup-bucket/emergency/"
+      - "s3://disaster-recovery/"
+      
+    restore_scripts:
+      - "scripts/restore-from-backup.sh"
+      - "scripts/recreate-infrastructure.sh"
