@@ -78,6 +78,9 @@ public class DriverDO {
         return id;
     }
 
+    public ZonedDateTime getDateCreated() {
+        return dateCreated;
+    }
 
     public void setId(Long id) {
         this.id = id;
