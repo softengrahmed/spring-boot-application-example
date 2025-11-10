@@ -124,7 +124,7 @@ public class CarDO {
         this.seatCount = seatCount;
     }
 
-    public void isConvertible(Boolean convertible) {
+    public void setConvertible(Boolean convertible) {
         this.convertible = convertible;
     }
 
