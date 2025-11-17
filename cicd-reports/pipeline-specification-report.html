@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot CI/CD Pipeline Specification Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header .meta { opacity: 0.9; font-size: 1.1em; }
+        .section { background: white; margin: 20px 0; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section h2 { color: #667eea; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+        .section h3 { color: #555; margin: 20px 0 10px 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; }
+        .card h4 { color: #667eea; margin-bottom: 10px; }
+        .badge { display: inline-block; padding: 4px 8px; background: #667eea; color: white; border-radius: 15px; font-size: 0.8em; margin: 2px; }
+        .badge.success { background: #28a745; }
+        .badge.warning { background: #ffc107; color: #333; }
+        .badge.info { background: #17a2b8; }
+        .metric { text-align: center; padding: 15px; }
+        .metric .value { font-size: 2em; font-weight: bold; color: #667eea; }
+        .metric .label { color: #666; font-size: 0.9em; }
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #667eea; }
+        .timeline-item { position: relative; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        .timeline-item::before { content: ''; position: absolute; left: -22px; top: 20px; width: 12px; height: 12px; background: #667eea; border-radius: 50%; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; overflow-x: auto; }
+        .cost-breakdown { display: flex; flex-wrap: wrap; gap: 15px; }
+        .cost-item { flex: 1; min-width: 150px; text-align: center; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px; }
+        .feature-list { list-style: none; }
+        .feature-list li { padding: 8px 0; position: relative; padding-left: 25px; }
+        .feature-list li::before { content: '✅'; position: absolute; left: 0; }
+        .architecture-diagram { text-align: center; margin: 20px 0; }
+        .flow-diagram { background: #f8f9fa; padding: 20px; border-radius: 8px; font-family: monospace; overflow-x: auto; }
+        .env-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .env-card { padding: 20px; border-radius: 8px; color: white; }
+        .env-dev { background: linear-gradient(135deg, #28a745, #20c997); }
+        .env-staging { background: linear-gradient(135deg, #ffc107, #fd7e14); color: #333; }
+        .env-prod { background: linear-gradient(135deg, #dc3545, #e83e8c); }
+        .footer { text-align: center; margin-top: 40px; padding: 20px; color: #666; }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 2em; }
+            .section { padding: 15px; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Spring Boot CI/CD Pipeline</h1>
+            <div class="meta">
+                <strong>Specification Report v1</strong><br>
+                Generated: September 23, 2025<br>
+                Repository: https://github.com/softengrahmed/spring-boot-application-example
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="section">
+            <h2>📋 Executive Summary</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Pipeline Overview</h4>
+                    <p>Comprehensive CI/CD pipeline for Spring Boot application with AWS ECS deployment, security scanning, quality gates, and automated cleanup.</p>
+                    <div class="badge success">Production Ready</div>
+                    <div class="badge info">Cost Optimized</div>
+                </div>
+                <div class="card">
+                    <h4>Key Metrics</h4>
+                    <div class="metric">
+                        <div class="value">9</div>
+                        <div class="label">Pipeline Stages</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">$35-50</div>
+                        <div class="label">Monthly Cost</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Technology Stack</h4>
+                    <div class="badge">Java 11</div>
+                    <div class="badge">Spring Boot</div>
+                    <div class="badge">Maven</div>
+                    <div class="badge">Docker</div>
+                    <div class="badge">AWS ECS</div>
+                    <div class="badge">PostgreSQL</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="section">
+            <h2>🏗️ Pipeline Architecture</h2>
+            <div class="flow-diagram">
+Source Code → Build → Security → Quality → Deploy → Migrate → Docs → Cleanup → Report
+     ↓         ↓        ↓         ↓        ↓        ↓        ↓        ↓         ↓
+  GitHub    Maven    CodeQL   Coverage   ECS    Flyway  Swagger  AWS     JSON
+            Tests    SAST     Gates             DB      API    Cleanup  Report
+            </div>
+            
+            <h3>🔄 Pipeline Flow</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>1. Initialize</h4>
+                    <p>Pipeline setup, metadata configuration, and structured logging initialization</p>
+                    <span class="badge">~30 seconds</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>2. Build & Test</h4>
+                    <p>Maven compilation, unit tests execution, JAR packaging, and artifact upload</p>
+                    <span class="badge">3-5 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>3. Security Scanning</h4>
+                    <p>CodeQL SAST analysis and OWASP dependency vulnerability scanning</p>
+                    <span class="badge">2-4 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>4. Quality Gates</h4>
+                    <p>Test coverage analysis (≥80%) and code quality validation</p>
+                    <span class="badge">1-2 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>5. Deploy</h4>
+                    <p>Docker image build, ECR push, and ECS deployment with health checks</p>
+                    <span class="badge">5-8 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>6. Database Migration</h4>
+                    <p>Flyway database schema migrations and validation</p>
+                    <span class="badge">1-3 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>7. API Documentation</h4>
+                    <p>Swagger/OpenAPI documentation generation and deployment</p>
+                    <span class="badge">1-2 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>8. Cleanup</h4>
+                    <p>AWS resource cleanup, cost optimization, and artifact management</p>
+                    <span class="badge">2-3 minutes</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>9. Report</h4>
+                    <p>Pipeline execution reporting and metrics collection</p>
+                    <span class="badge">30 seconds</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Environment Strategy -->
+        <div class="section">
+            <h2>🌍 Environment Strategy</h2>
+            <div class="env-grid">
+                <div class="env-card env-dev">
+                    <h3>Development</h3>
+                    <p><strong>Trigger:</strong> Feature branch pushes</p>
+                    <p><strong>Database:</strong> H2 in-memory</p>
+                    <p><strong>Auto-deploy:</strong> Yes</p>
+                    <p><strong>Approval:</strong> Not required</p>
+                    <p><strong>Resources:</strong> 1 container, minimal</p>
+                </div>
+                <div class="env-card env-staging">
+                    <h3>Staging</h3>
+                    <p><strong>Trigger:</strong> Main branch pushes</p>
+                    <p><strong>Database:</strong> Dedicated RDS</p>
+                    <p><strong>Auto-deploy:</strong> Yes</p>
+                    <p><strong>Approval:</strong> Not required</p>
+                    <p><strong>Resources:</strong> 1-2 containers, auto-scaling</p>
+                </div>
+                <div class="env-card env-prod">
+                    <h3>Production</h3>
+                    <p><strong>Trigger:</strong> Release tags / Manual</p>
+                    <p><strong>Database:</strong> Production RDS + backups</p>
+                    <p><strong>Auto-deploy:</strong> No</p>
+                    <p><strong>Approval:</strong> Required</p>
+                    <p><strong>Resources:</strong> 2-10 containers, auto-scaling</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Implementation -->
+        <div class="section">
+            <h2>⭐ Implemented Features</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>🔐 Security Features</h4>
+                    <ul class="feature-list">
+                        <li>CodeQL Static Application Security Testing (SAST)</li>
+                        <li>OWASP Dependency Vulnerability Scanning</li>
+                        <li>Container Image Security Scanning</li>
+                        <li>AWS Secrets Manager Integration</li>
+                        <li>IAM Roles with Least Privilege</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📊 Quality Assurance</h4>
+                    <ul class="feature-list">
+                        <li>Minimum 80% Test Coverage Requirement</li>
+                        <li>JaCoCo Coverage Reporting</li>
+                        <li>Code Quality Gates</li>
+                        <li>Automated Unit Testing</li>
+                        <li>Quality Metrics Dashboard</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🚀 Deployment & Operations</h4>
+                    <ul class="feature-list">
+                        <li>Docker Containerization</li>
+                        <li>AWS ECS with Fargate</li>
+                        <li>Blue-Green Deployment Ready</li>
+                        <li>Database Migration Automation (Flyway)</li>
+                        <li>Health Check Monitoring</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📚 Documentation & Monitoring</h4>
+                    <ul class="feature-list">
+                        <li>Swagger/OpenAPI Documentation</li>
+                        <li>Spring Boot Actuator Integration</li>
+                        <li>CloudWatch Monitoring</li>
+                        <li>Structured JSON Logging</li>
+                        <li>Pipeline Execution Reporting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Analysis -->
+        <div class="section">
+            <h2>💰 Cost Analysis</h2>
+            <h3>Monthly Cost Breakdown</h3>
+            <div class="cost-breakdown">
+                <div class="cost-item">
+                    <h4>Compute (ECS/Fargate)</h4>
+                    <div class="value">$15-25</div>
+                    <p>Container execution costs</p>
+                </div>
+                <div class="cost-item">
+                    <h4>Database (RDS)</h4>
+                    <div class="value">$10-15</div>
+                    <p>PostgreSQL instance</p>
+                </div>
+                <div class="cost-item">
+                    <h4>Storage (ECR/S3)</h4>
+                    <div class="value">$5-8</div>
+                    <p>Container images & artifacts</p>
+                </div>
+                <div class="cost-item">
+                    <h4>Monitoring</h4>
+                    <div class="value">$5-7</div>
+                    <p>CloudWatch logs & metrics</p>
+                </div>
+            </div>
+            
+            <h3>Cost Optimization Features</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Automated Cleanup</h4>
+                    <p>Removes old container images, logs, and temporary resources after each deployment</p>
+                    <div class="badge success">Saves $45-80/month</div>
+                </div>
+                <div class="card">
+                    <h4>Resource Right-sizing</h4>
+                    <p>Environment-specific resource allocation with auto-scaling</p>
+                    <div class="badge success">Optimizes utilization</div>
+                </div>
+                <div class="card">
+                    <h4>Retention Policies</h4>
+                    <p>Intelligent data retention based on environment and importance</p>
+                    <div class="badge success">Reduces storage costs</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Configuration -->
+        <div class="section">
+            <h2>🔒 Security Configuration</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Static Analysis</h4>
+                    <div class="code-block">
+# CodeQL Configuration
+languages: [java]
+queries: security-and-quality
+fail_on: critical
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Dependency Scanning</h4>
+                    <div class="code-block">
+# OWASP Dependency Check
+fail_build_on_cvss: 7.0
+formats: [XML, HTML, JSON]
+skip_test_scope: true
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Container Security</h4>
+                    <div class="code-block">
+# Dockerfile Security
+FROM openjdk:11-jre-slim
+RUN groupadd -r appuser
+USER appuser
+HEALTHCHECK --interval=30s
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Infrastructure Security</h4>
+                    <div class="code-block">
+# AWS Security
+vpc: private_subnets
+encryption: enabled
+secrets_manager: enabled
+iam_roles: least_privilege
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Gates -->
+        <div class="section">
+            <h2>🎯 Quality Gates</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Test Coverage Gate</h4>
+                    <p><strong>Minimum:</strong> 80% line coverage</p>
+                    <p><strong>Tool:</strong> JaCoCo</p>
+                    <p><strong>Exclusions:</strong> Config classes, main application class</p>
+                    <div class="badge success">Automated</div>
+                </div>
+                <div class="card">
+                    <h4>Security Gate</h4>
+                    <p><strong>Critical Issues:</strong> 0 allowed</p>
+                    <p><strong>High Issues:</strong> Maximum 2</p>
+                    <p><strong>Tools:</strong> CodeQL, OWASP</p>
+                    <div class="badge warning">Enforced</div>
+                </div>
+                <div class="card">
+                    <h4>Code Quality Gate</h4>
+                    <p><strong>Complexity:</strong> < 10 cyclomatic</p>
+                    <p><strong>Duplication:</strong> < 3%</p>
+                    <p><strong>Maintainability:</strong> Grade A/B</p>
+                    <div class="badge info">Monitored</div>
+                </div>
+                <div class="card">
+                    <h4>Performance Gate</h4>
+                    <p><strong>Build Time:</strong> < 15 minutes</p>
+                    <p><strong>Image Size:</strong> < 500MB</p>
+                    <p><strong>Startup Time:</strong> < 60 seconds</p>
+                    <div class="badge success">Optimized</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Implementation -->
+        <div class="section">
+            <h2>🔧 Technical Implementation</h2>
+            
+            <h3>Key Configuration Files</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Main Pipeline</h4>
+                    <code>.github/workflows/cicd-main-pipeline.yaml</code>
+                    <p>Orchestrates all pipeline stages with proper permissions and error handling</p>
+                </div>
+                <div class="card">
+                    <h4>Docker Configuration</h4>
+                    <code>Dockerfile</code>
+                    <p>Multi-stage build optimized for Spring Boot with security best practices</p>
+                </div>
+                <div class="card">
+                    <h4>Database Migrations</h4>
+                    <code>src/main/resources/db/migration/</code>
+                    <p>Flyway migration scripts for database schema management</p>
+                </div>
+                <div class="card">
+                    <h4>Infrastructure as Code</h4>
+                    <code>cicd-infrastructure/aws-serverless-config.yaml</code>
+                    <p>Terraform configuration for AWS resource provisioning</p>
+                </div>
+            </div>
+            
+            <h3>Retry Strategy</h3>
+            <div class="code-block">
+# Progressive Retry Configuration
+initialize: 3 retries
+build: 4 retries (includes test execution)
+security: 4 retries
+quality: 4 retries
+deploy: 4 retries
+migrate: 4 retries
+cleanup: 3 retries
+report: 3 retries
+            </div>
+        </div>
+
+        <!-- Monitoring & Observability -->
+        <div class="section">
+            <h2>📊 Monitoring & Observability</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Application Monitoring</h4>
+                    <ul class="feature-list">
+                        <li>Spring Boot Actuator endpoints</li>
+                        <li>Health checks every 30 seconds</li>
+                        <li>Custom business metrics</li>
+                        <li>Performance monitoring</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Infrastructure Monitoring</h4>
+                    <ul class="feature-list">
+                        <li>ECS container metrics</li>
+                        <li>RDS performance insights</li>
+                        <li>ALB request metrics</li>
+                        <li>CloudWatch custom dashboards</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Logging Strategy</h4>
+                    <ul class="feature-list">
+                        <li>Structured JSON logging</li>
+                        <li>Centralized log aggregation</li>
+                        <li>Log retention policies</li>
+                        <li>Security audit logs</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Alerting</h4>
+                    <ul class="feature-list">
+                        <li>Application health alerts</li>
+                        <li>Resource utilization alerts</li>
+                        <li>Security incident alerts</li>
+                        <li>Deployment status notifications</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="section">
+            <h2>🚀 Next Steps</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>1. Infrastructure Setup</h4>
+                    <p>Deploy AWS infrastructure using provided Terraform configuration</p>
+                    <span class="badge">Infrastructure Team</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>2. Secrets Configuration</h4>
+                    <p>Configure AWS credentials and database connection strings in GitHub Secrets</p>
+                    <span class="badge">DevOps Team</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>3. Pipeline Testing</h4>
+                    <p>Test pipeline execution with a sample commit to the main branch</p>
+                    <span class="badge">Development Team</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>4. Monitoring Setup</h4>
+                    <p>Configure CloudWatch dashboards and alerting thresholds</p>
+                    <span class="badge">Operations Team</span>
+                </div>
+                <div class="timeline-item">
+                    <h4>5. Documentation Review</h4>
+                    <p>Review and customize pipeline documentation for team processes</p>
+                    <span class="badge">All Teams</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🚀 <strong>Spring Boot CI/CD Pipeline Specification</strong></p>
+            <p>Generated on September 23, 2025 | Version 1.0</p>
+            <p>Pipeline ID: spring-boot-cicd-v1-2025-09-23</p>
+            <p>Ready for production deployment with comprehensive monitoring and cost optimization</p>
+        </div>
+    </div>
+</body>
+</html>

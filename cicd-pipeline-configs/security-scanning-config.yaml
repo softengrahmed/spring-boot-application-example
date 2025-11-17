@@ -1,0 +1,131 @@
+# Security Scanning Configuration
+# Spring Boot Application
+
+security_scanning:
+  # SAST (Static Application Security Testing)
+  sast:
+    enabled: true
+    tools:
+      - name: "CodeQL"
+        languages: ["java"]
+        queries: ["security-and-quality"]
+        
+    configurations:
+      codeql:
+        database_languages: ["java"]
+        query_suite: "security-and-quality"
+        
+  # Dependency Scanning
+  dependency_scanning:
+    enabled: true
+    tools:
+      - name: "OWASP Dependency Check"
+        maven_plugin: "org.owasp:dependency-check-maven"
+        
+      - name: "GitHub Security Advisories"
+        integration: "dependabot"
+        
+    configurations:
+      owasp:
+        fail_build_on_cvss: 7.0
+        skip_test_scope: true
+        formats: ["XML", "HTML", "JSON"]
+        
+  # Container Scanning
+  container_scanning:
+    enabled: true
+    tools:
+      - name: "Trivy"
+        scanner_type: "vulnerability"
+        
+      - name: "ECR Image Scanning"
+        scan_on_push: true
+        
+    configurations:
+      trivy:
+        severity: ["HIGH", "CRITICAL"]
+        exit_code: 1
+        
+  # Secret Scanning
+  secret_scanning:
+    enabled: true
+    tools:
+      - name: "GitHub Secret Scanning"
+        push_protection: true
+        
+      - name: "TruffleHog"
+        entropy_check: true
+        
+  # Quality Gates
+  quality_gates:
+    security_thresholds:
+      critical_vulnerabilities: 0
+      high_vulnerabilities: 2
+      medium_vulnerabilities: 10
+      
+    dependency_thresholds:
+      critical_cvss: 0
+      high_cvss: 2
+      
+    container_thresholds:
+      critical_vulnerabilities: 0
+      high_vulnerabilities: 1
+      
+  # Reporting
+  reporting:
+    formats: ["SARIF", "JSON", "HTML"]
+    upload_to_github: true
+    archive_reports: true
+    retention_days: 30
+    
+  # Notifications
+  notifications:
+    on_failure: true
+    on_new_vulnerabilities: true
+    channels: ["github_issues", "email"]
+    
+  # Exclusions
+  exclusions:
+    # Test dependencies
+    dependencies:
+      - "org.springframework.boot:spring-boot-starter-test"
+      - "com.h2database:h2"
+      
+    # File patterns
+    files:
+      - "src/test/**"
+      - "**/*.test.java"
+      - "**/test-resources/**"
+      
+    # CVEs (with justification)
+    cves:
+      # Example: older Spring Boot version
+      - cve: "CVE-2023-XXXXX"
+        reason: "Not exploitable in our configuration"
+        expires: "2025-12-31"
+        
+# Tool-specific configurations
+tools:
+  codeql:
+    config_file: ".github/codeql/codeql-config.yml"
+    
+  owasp_dependency_check:
+    maven_goals: "org.owasp:dependency-check-maven:check"
+    
+  trivy:
+    config_file: ".trivy.yaml"
+    
+# Environment-specific overrides
+environments:
+  dev:
+    fail_on_vulnerabilities: false
+    upload_results: true
+    
+  staging:
+    fail_on_vulnerabilities: true
+    upload_results: true
+    
+  prod:
+    fail_on_vulnerabilities: true
+    upload_results: true
+    block_deployment: true
